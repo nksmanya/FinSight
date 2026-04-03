@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -15,6 +15,8 @@ import {
 import { useGlobalTransactions } from '@/context/TransactionContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/mock-data';
+import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 
 const CATEGORY_COLORS = [
   '#3b82f6',
@@ -29,8 +31,53 @@ const CATEGORY_COLORS = [
   '#22c55e',
 ];
 
+function ThemedTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-card/95 backdrop-blur-md px-3 py-2 shadow-xl">
+      {label ? <p className="text-xs text-muted-foreground mb-1">{label}</p> : null}
+      <div className="space-y-1">
+        {payload.map((item) => (
+          <div key={`${item.name}-${item.value}`} className="flex items-center justify-between gap-4 text-sm">
+            <span className="font-medium" style={{ color: item.color || 'currentColor' }}>
+              {item.name}
+            </span>
+            <span className="font-semibold text-foreground">
+              {formatCurrency(Number(item.value ?? 0))}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CategoryBreakdownTooltip({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) {
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
+
+  const value = Number(payload[0]?.value ?? 0);
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-card/95 backdrop-blur-md px-3 py-2 shadow-xl min-w-44">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">Category</p>
+      <p className="text-base font-semibold mt-0.5">{label}</p>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">Total Spend</span>
+        <span className="text-sm font-bold text-foreground">{formatCurrency(value)}</span>
+      </div>
+    </div>
+  );
+}
+
 export function InsightsCharts() {
   const { data } = useGlobalTransactions();
+  const [activeMonth, setActiveMonth] = useState<string | null>(null);
+  const [activeTopCategory, setActiveTopCategory] = useState<string | null>(null);
 
   const { categoryBreakdown, topCategories, monthlyComparison } = useMemo(() => {
     const expenses = data.filter((t) => t.type === 'expense');
@@ -82,9 +129,43 @@ export function InsightsCharts() {
     };
   }, [data]);
 
+  const totalTopCategorySpend = topCategories.reduce((sum, item) => sum + item.amount, 0);
+  const activeTopCategoryData =
+    activeTopCategory ? topCategories.find((item) => item.category === activeTopCategory) : null;
+
+  const centerValue = activeTopCategoryData ? activeTopCategoryData.amount : totalTopCategorySpend;
+  const centerValueDisplay = Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(centerValue);
+
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      <Card className="xl:col-span-2 border-border/70">
+    <motion.section
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-4"
+    >
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-lg md:text-xl font-semibold tracking-tight">Visual Breakdown</h2>
+          <p className="text-sm text-muted-foreground">Explore where money moves and how monthly balance shifts.</p>
+        </div>
+        <Badge variant="outline" className="bg-background/70">Interactive charts</Badge>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ delay: 0.04, duration: 0.28 }}
+        className="xl:col-span-2"
+      >
+      <Card className="h-full border-border/70 shadow-sm bg-gradient-to-b from-card to-card/90">
         <CardHeader>
           <CardTitle>Full Category Breakdown</CardTitle>
           <CardDescription>All spending categories ranked by total amount.</CardDescription>
@@ -101,7 +182,14 @@ export function InsightsCharts() {
                   data={categoryBreakdown}
                   layout="vertical"
                   margin={{ top: 8, right: 24, left: 24, bottom: 8 }}
+                  barCategoryGap="24%"
                 >
+                  <defs>
+                    <linearGradient id="breakdownBarGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.95} />
+                      <stop offset="100%" stopColor="#60a5fa" stopOpacity={1} />
+                    </linearGradient>
+                  </defs>
                   <XAxis
                     type="number"
                     tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
@@ -120,51 +208,85 @@ export function InsightsCharts() {
                     stroke="#888888"
                   />
                   <Tooltip
-                    formatter={(value) => formatCurrency(Number(value ?? 0))}
-                    cursor={{ fill: 'rgba(148, 163, 184, 0.12)' }}
-                    contentStyle={{
-                      borderRadius: '12px',
-                      border: '1px solid rgba(148,163,184,0.25)',
-                    }}
+                    content={<CategoryBreakdownTooltip />}
+                    cursor={false}
                   />
-                  <Bar dataKey="amount" radius={[0, 8, 8, 0]} fill="#3b82f6" />
+                  <Bar
+                    dataKey="amount"
+                    name="Spend"
+                    radius={[0, 10, 10, 0]}
+                    fill="url(#breakdownBarGradient)"
+                    isAnimationActive
+                    animationBegin={100}
+                    animationDuration={750}
+                    animationEasing="ease-out"
+                    activeBar={{ fill: '#60a5fa' }}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
         </CardContent>
       </Card>
+      </motion.div>
 
-      <Card className="border-border/70">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ delay: 0.08, duration: 0.28 }}
+      >
+      <Card className="h-full border-border/70 shadow-sm bg-gradient-to-b from-card to-card/90">
         <CardHeader>
           <CardTitle>Top Expense Categories</CardTitle>
           <CardDescription>Where your money goes most often.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-56 w-full">
+          <div className="h-56 w-full relative">
             {topCategories.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 No expense data available yet.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={topCategories}
-                    dataKey="amount"
-                    nameKey="category"
-                    innerRadius={55}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    stroke="none"
-                  >
-                    {topCategories.map((entry) => (
-                      <Cell key={entry.category} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(Number(value ?? 0))} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                  <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    {activeTopCategoryData ? activeTopCategoryData.category : 'Total'}
+                  </p>
+                  <p className="text-2xl sm:text-[2rem] font-black leading-none tracking-tight text-foreground mt-1 max-w-[10.5rem] text-center truncate">
+                    {centerValueDisplay}
+                  </p>
+                </div>
+
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={topCategories}
+                      dataKey="amount"
+                      nameKey="category"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={3}
+                      stroke="none"
+                      isAnimationActive
+                      animationBegin={120}
+                      animationDuration={900}
+                      animationEasing="ease-out"
+                      onMouseEnter={(_, index) => setActiveTopCategory(topCategories[index]?.category ?? null)}
+                      onMouseLeave={() => setActiveTopCategory(null)}
+                    >
+                      {topCategories.map((entry) => (
+                        <Cell
+                          key={entry.category}
+                          fill={entry.color}
+                          fillOpacity={activeTopCategory && activeTopCategory !== entry.category ? 0.35 : 1}
+                          style={{ transition: 'fill-opacity 220ms ease' }}
+                        />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </>
             )}
           </div>
 
@@ -183,8 +305,16 @@ export function InsightsCharts() {
           ) : null}
         </CardContent>
       </Card>
+      </motion.div>
 
-      <Card className="xl:col-span-3 border-border/70">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ delay: 0.12, duration: 0.28 }}
+        className="xl:col-span-3"
+      >
+      <Card className="border-border/70 shadow-sm bg-gradient-to-b from-card to-card/90">
         <CardHeader>
           <CardTitle>Monthly Comparison</CardTitle>
           <CardDescription>Income vs expenses across recent months.</CardDescription>
@@ -197,7 +327,16 @@ export function InsightsCharts() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyComparison} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
+                <BarChart
+                  data={monthlyComparison}
+                  margin={{ top: 8, right: 12, left: 0, bottom: 8 }}
+                  barCategoryGap="28%"
+                  onMouseMove={(state) => {
+                    const label = state?.activeLabel;
+                    setActiveMonth(typeof label === 'string' ? label : null);
+                  }}
+                  onMouseLeave={() => setActiveMonth(null)}
+                >
                   <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} stroke="#888888" />
                   <YAxis
                     axisLine={false}
@@ -207,20 +346,55 @@ export function InsightsCharts() {
                     tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
                   />
                   <Tooltip
-                    formatter={(value) => formatCurrency(Number(value ?? 0))}
-                    contentStyle={{
-                      borderRadius: '12px',
-                      border: '1px solid rgba(148,163,184,0.25)',
-                    }}
+                    content={<ThemedTooltip />}
+                    cursor={false}
                   />
-                  <Bar dataKey="income" name="Income" fill="#10b981" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="expense" name="Expense" fill="#ef4444" radius={[6, 6, 0, 0]} />
+                  <Bar
+                    dataKey="income"
+                    name="Income"
+                    fill="#10b981"
+                    radius={[6, 6, 0, 0]}
+                    isAnimationActive
+                    animationBegin={80}
+                    animationDuration={850}
+                    animationEasing="ease-out"
+                    activeBar={{ stroke: '#10b981', strokeOpacity: 0.35, strokeWidth: 2 }}
+                  >
+                    {monthlyComparison.map((entry) => (
+                      <Cell
+                        key={`income-${entry.month}`}
+                        fillOpacity={activeMonth && activeMonth !== entry.month ? 0.35 : 1}
+                        style={{ transition: 'fill-opacity 220ms ease' }}
+                      />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="expense"
+                    name="Expense"
+                    fill="#ef4444"
+                    radius={[6, 6, 0, 0]}
+                    isAnimationActive
+                    animationBegin={220}
+                    animationDuration={900}
+                    animationEasing="ease-out"
+                    activeBar={{ stroke: '#ef4444', strokeOpacity: 0.35, strokeWidth: 2 }}
+                  >
+                    {monthlyComparison.map((entry) => (
+                      <Cell
+                        key={`expense-${entry.month}`}
+                        fillOpacity={activeMonth && activeMonth !== entry.month ? 0.35 : 1}
+                        style={{ transition: 'fill-opacity 220ms ease' }}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
         </CardContent>
       </Card>
+      </motion.div>
     </div>
+    </motion.section>
   );
 }

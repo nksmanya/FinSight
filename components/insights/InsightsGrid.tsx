@@ -12,6 +12,7 @@ import { formatCurrency } from '@/lib/mock-data';
 import { useGlobalTransactions } from '@/context/TransactionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 type SignalTone = 'good' | 'watch' | 'risk';
 
@@ -225,9 +226,22 @@ export function InsightsGrid() {
           : 'Expenses are outpacing income. Prioritize high-impact cuts in top categories.';
 
   return (
-    <div className="space-y-6">
+    <motion.section
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <Card className="lg:col-span-3 border-border/70">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ delay: 0.04, duration: 0.28 }}
+          className="lg:col-span-3"
+        >
+        <Card className="h-full border-border/70 shadow-sm bg-gradient-to-b from-card to-card/90">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Insight Radar</CardTitle>
             <p className="text-sm text-muted-foreground">A compact view of your strongest and weakest financial signals.</p>
@@ -236,7 +250,14 @@ export function InsightsGrid() {
             {signals.map((signal) => {
               const tone = getToneClasses(signal.tone);
               return (
-                <div key={signal.title} className="space-y-2">
+                <motion.div
+                  key={signal.title}
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.24 }}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium">{signal.title}</p>
                     <div className="flex items-center gap-2">
@@ -245,45 +266,71 @@ export function InsightsGrid() {
                     </div>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div
+                    <motion.div
                       className={`h-full rounded-full transition-all ${tone.bar}`}
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${Math.min(100, Math.max(0, signal.percent))}%` }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.5 }}
                       style={{ width: `${Math.min(100, Math.max(0, signal.percent))}%` }}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">{signal.note}</p>
-                </div>
+                </motion.div>
               );
             })}
           </CardContent>
         </Card>
+        </motion.div>
 
-        <Card className="lg:col-span-2 border-border/70">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ delay: 0.08, duration: 0.28 }}
+          className="lg:col-span-2"
+        >
+        <Card className="h-full border-border/70 shadow-sm bg-gradient-to-b from-card to-card/90">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Action Board</CardTitle>
             <p className="text-sm text-muted-foreground">Three key insights you can act on immediately.</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg border p-3 bg-muted/30">
+            <div className="rounded-lg border p-3 bg-muted/30 hover:bg-muted/40 transition-colors">
               <p className="text-xs text-muted-foreground">Highest Spending Category</p>
-              <p className="text-base font-semibold mt-1">{topCategory}</p>
+              <p className="text-base font-semibold mt-1 flex items-center gap-2"><TrendingDown className="h-4 w-4 text-rose-500" />{topCategory}</p>
               <p className="text-xs text-muted-foreground mt-1">Represents {topCategoryPercentage}% of total expenses.</p>
             </div>
 
-            <div className="rounded-lg border p-3 bg-muted/30">
+            <div className="rounded-lg border p-3 bg-muted/30 hover:bg-muted/40 transition-colors">
               <p className="text-xs text-muted-foreground">Monthly Comparison</p>
-              <p className="text-base font-semibold mt-1">{monthlyComparisonStr}</p>
+              <p className="text-base font-semibold mt-1 flex items-center gap-2">
+                {monthlyChange > 0 ? (
+                  <CircleAlert className="h-4 w-4 text-amber-500" />
+                ) : (
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                )}
+                {monthlyComparisonStr}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">{monthlyComparisonDesc}</p>
             </div>
 
-            <div className="rounded-lg border p-3 bg-muted/30">
+            <div className="rounded-lg border p-3 bg-muted/30 hover:bg-muted/40 transition-colors">
               <p className="text-xs text-muted-foreground">Useful Observation</p>
-              <p className="text-sm mt-1 leading-relaxed">{usefulObservation}</p>
+              <p className="text-sm mt-1 leading-relaxed flex gap-2"><Sparkles className="h-4 w-4 mt-0.5 text-sky-500 shrink-0" />{usefulObservation}</p>
             </div>
           </CardContent>
         </Card>
+        </motion.div>
       </div>
 
-      <div className="rounded-xl border bg-card px-4 py-3">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ delay: 0.12, duration: 0.26 }}
+        className="rounded-xl border bg-gradient-to-r from-card to-card/90 px-4 py-3 shadow-sm"
+      >
         <p className="text-sm font-medium">Narrative Snapshot</p>
         <p className="text-sm text-muted-foreground mt-1">
           Largest category is <span className="font-semibold text-foreground">{topCategory}</span>, monthly trend is{' '}
@@ -295,7 +342,7 @@ export function InsightsGrid() {
             Biggest single transaction: {biggestExpense.description} ({formatCurrency(biggestExpense.amount)}).
           </p>
         ) : null}
-      </div>
-    </div>
+      </motion.div>
+    </motion.section>
   );
 }
