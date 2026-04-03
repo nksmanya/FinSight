@@ -1,13 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { mockTransactions, formatCurrency } from '@/lib/mock-data';
+import { formatCurrency } from '@/lib/mock-data';
+import { useGlobalTransactions } from '@/context/TransactionContext';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export function RecentActivity() {
-  const recentTransactions = mockTransactions.slice(0, 5);
+  const { data } = useGlobalTransactions();
+  // Sort data strictly by date descending to get true recent txns
+  const recentTransactions = [...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
   return (
     <Card className="col-span-1 lg:col-span-3">
@@ -21,15 +24,15 @@ export function RecentActivity() {
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
+        <div className="space-y-2">
           {recentTransactions.map((transaction) => {
             const isIncome = transaction.type === 'income';
             
             return (
-              <div key={transaction.id} className="flex items-center justify-between group">
+              <div key={transaction.id} className="flex items-center justify-between group hover:bg-muted/40 p-3 -mx-3 rounded-xl transition-all border border-transparent hover:border-border">
                 <div className="flex items-center gap-4">
                   <Avatar className={cn(
-                    "h-10 w-10 flex items-center justify-center border",
+                    "h-11 w-11 flex items-center justify-center border shadow-sm",
                     isIncome ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
                   )}>
                     <AvatarFallback className="bg-transparent">
@@ -37,10 +40,10 @@ export function RecentActivity() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium leading-none mb-1 group-hover:text-primary transition-colors">
+                    <p className="text-sm font-semibold leading-none mb-1.5 group-hover:text-primary transition-colors">
                       {transaction.description}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-medium">
                       {new Date(transaction.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {transaction.category}
                     </p>
                   </div>

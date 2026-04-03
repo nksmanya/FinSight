@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Transaction } from '@/types';
-import { mockTransactions } from '@/lib/mock-data';
+import { useGlobalTransactions } from '@/context/TransactionContext';
 
 export type SortField = 'date' | 'amount';
 export type SortOrder = 'asc' | 'desc';
 
 export function useTransactions() {
-  const [data, setData] = useState<Transaction[]>(mockTransactions);
+  const { data, addTransaction, deleteTransaction, editTransaction } = useGlobalTransactions();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -18,24 +18,6 @@ export function useTransactions() {
     const cats = new Set(data.map((t) => t.category));
     return ['all', ...Array.from(cats)].sort();
   }, [data]);
-
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction = {
-      ...transaction,
-      id: Math.random().toString(36).substring(7),
-    };
-    setData((prev) => [newTransaction, ...prev]);
-  };
-
-  const deleteTransaction = (id: string) => {
-    setData((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const editTransaction = (updatedTransaction: Transaction) => {
-    setData((prev) =>
-      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
-    );
-  };
 
   const filteredAndSortedData = useMemo(() => {
     let result = [...data];
