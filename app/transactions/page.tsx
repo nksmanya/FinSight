@@ -22,6 +22,7 @@ export default function TransactionsPage() {
     setSortField,
     addTransaction,
     deleteTransaction,
+    editTransaction,
   } = useTransactions();
 
   const handleSort = (field: 'date' | 'amount') => {
@@ -73,6 +74,7 @@ export default function TransactionsPage() {
       <TransactionTable
         transactions={transactions}
         onDelete={deleteTransaction}
+        onEdit={editTransaction}
         sortField={sortField}
         sortOrder={sortOrder}
         onSort={handleSort}

@@ -24,6 +24,12 @@ export function useTransactions() {
     setData((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const editTransaction = (updatedTransaction: Transaction) => {
+    setData((prev) =>
+      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
+    );
+  };
+
   const filteredAndSortedData = useMemo(() => {
     let result = [...data];
 
@@ -69,5 +75,6 @@ export function useTransactions() {
     setSortOrder,
     addTransaction,
     deleteTransaction,
+    editTransaction,
   };
 }

@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Receipt, PieChart, Settings, Wallet } from 'lucide-react';
+import { LayoutDashboard, Receipt, PieChart, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -18,9 +19,9 @@ export function Sidebar() {
   return (
     <aside className="w-64 border-r bg-card hidden md:flex flex-col h-screen sticky top-0">
       <div className="h-16 flex items-center px-6 border-b">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
-          <div className="bg-primary/10 text-primary p-1.5 rounded-lg">
-            <Wallet className="h-5 w-5" />
+        <Link href="/" className="flex items-center gap-3 font-bold text-xl tracking-tight">
+          <div className="relative h-8 w-8 overflow-hidden rounded-md shadow-sm">
+            <Image src="/logo.png" alt="FinSight Logo" fill className="object-cover" />
           </div>
           FinSight
         </Link>
