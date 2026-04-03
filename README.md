@@ -280,6 +280,7 @@ State was managed using standard **React Context** combined with custom hooks to
 - `TransactionContext` holds the source of truth for all transactions and handles Local Storage persistent synchronization.
 - `RoleContext` stores the active mock user role, cleanly propagating `isAdmin` access checks down to the UI.
 
+
 ### Data Flow
 We abstracted data manipulation (sorting, filtering, pagination) into the `useTransactions` hook. This ensures that the UI layers (like the Transactions table and Insights cards) remain declarative and simply display the processed subsets of data.
 
