@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Transaction } from '@/types';
 import { mockTransactions } from '@/lib/mock-data';
 import { toast } from 'sonner';
@@ -16,6 +16,25 @@ const TransactionContext = createContext<TransactionContextType | undefined>(und
 
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<Transaction[]>(mockTransactions);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('finsight_data');
+      if (stored) {
+        setData(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to parse local storage", e);
+    }
+    setIsInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('finsight_data', JSON.stringify(data));
+    }
+  }, [data, isInitialized]);
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     const newTransaction = {

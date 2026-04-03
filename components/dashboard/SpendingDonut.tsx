@@ -33,53 +33,65 @@ export function SpendingDonut() {
       </CardHeader>
       <CardContent>
         <div className="h-[250px] w-full relative">
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              {hoveredItem ? hoveredItem.name : 'TOTAL'}
+          {liveSpendingData.length === 0 ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <div className="h-32 w-32 rounded-full border-[12px] border-muted mb-4" />
+              <p className="text-muted-foreground text-sm font-medium">No expenses yet.</p>
             </div>
-            <div className="text-3xl font-black text-foreground">
-              {Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                notation: 'compact',
-                maximumFractionDigits: 1,
-              }).format(hoveredItem ? hoveredItem.value : liveSpendingData.reduce((a, b) => a + b.value, 0))}
-            </div>
+          ) : (
+            <>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  {hoveredItem ? hoveredItem.name : 'TOTAL'}
+                </div>
+                <div className="text-3xl font-black text-foreground">
+                  {Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    notation: 'compact',
+                    maximumFractionDigits: 1,
+                  }).format(hoveredItem ? hoveredItem.value : liveSpendingData.reduce((a, b) => a + b.value, 0))}
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={liveSpendingData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={95}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                    onMouseEnter={(_, index) => setHoveredItem(liveSpendingData[index])}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    {liveSpendingData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
+                        style={{ outline: 'none', transition: 'all 0.2s ease-in-out' }} 
+                        className="hover:opacity-80 cursor-pointer"
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </>
+          )}
+        </div>
+        
+        {liveSpendingData.length > 0 && (
+          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+            {liveSpendingData.map((item) => (
+              <div key={item.name} className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="text-muted-foreground">{item.name}</span>
+              </div>
+            ))}
           </div>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-                <Pie
-                  data={liveSpendingData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={70}
-                  outerRadius={95}
-                  paddingAngle={5}
-                  dataKey="value"
-                  stroke="none"
-                  onMouseEnter={(_, index) => setHoveredItem(liveSpendingData[index])}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  {liveSpendingData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color} 
-                      style={{ outline: 'none', transition: 'all 0.2s ease-in-out' }} 
-                      className="hover:opacity-80 cursor-pointer"
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-          {liveSpendingData.map((item) => (
-            <div key={item.name} className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-muted-foreground">{item.name}</span>
-            </div>
-          ))}
-        </div>
+        )}
       </CardContent>
     </Card>
   );
