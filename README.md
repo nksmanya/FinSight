@@ -4,9 +4,9 @@ Finsight is a comprehensive, modern financial dashboard application built with N
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 📊 Dashboard
+### Dashboard
 - **Total Balance Card** - Displays net position with trend indicators and teal-colored styling for visual prominence
 - **Income & Expense Cards** - Color-coded metrics (green for income, red for expenses) with month-over-month comparisons
 - **Balance Trend Chart** - Interactive dual-area chart showing income vs. expenses with 3M/6M/1Y range toggle
@@ -14,7 +14,7 @@ Finsight is a comprehensive, modern financial dashboard application built with N
 - **Monthly Comparison Chart** - Month-by-month financial comparison with animated bar charts
 - **Recent Activity Feed** - Latest transactions displayed with detailed information
 
-### 💡 Insights Section
+### Insights Section
 - **Financial Pulse Cards** - Three key metrics:
   - Highest Spending Category (color-coded in blue)
   - Latest Month Spend (displayed in red)
@@ -31,7 +31,7 @@ Finsight is a comprehensive, modern financial dashboard application built with N
 - **Narrative Snapshot** - Text-based financial summary with highlighted top spending categories
 - **Smooth Animations** - Staggered reveals and transitions using Framer Motion
 
-### 💳 Transaction Management
+### Transaction Management
 - **Full CRUD Operations** - Create, read, update, and delete transactions
 - **Advanced Filtering**:
   - Filter by transaction type (Income/Expense)
@@ -43,7 +43,7 @@ Finsight is a comprehensive, modern financial dashboard application built with N
 - **CSV Export** - Export filtered transactions to CSV format
 - **Real-time Stats** - Live display of income, expenses, and transaction count
 
-### 🔐 Role-Based Access Control (RBAC)
+### Role-Based Access Control (RBAC)
 - **Admin Role**:
   - Full access to all features
   - Can add, edit, and delete transactions
@@ -54,13 +54,13 @@ Finsight is a comprehensive, modern financial dashboard application built with N
   - Can filter and search transactions
   - Limited settings with display preferences
 
-### ⚙️ Settings Page
+### Settings Page
 - **Admin Controls** - User management, data management (export/reset), system configuration
 - **General Settings** - Application name and version information
 - **Viewer Settings** - Theme selection, notification preferences, data display options
 - **Role-Specific Interface** - Different sections based on user role
 
-### 🎨 UI/UX Features
+### UI/UX Features
 - **Responsive Design** - Fully optimized for mobile, tablet, and desktop
 - **Light/Dark Mode** - System-based or manual theme toggling
 - **Color-Coded Metrics** - Green for positive values, red for expenses/negative values
@@ -70,7 +70,7 @@ Finsight is a comprehensive, modern financial dashboard application built with N
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Category | Technologies |
 |----------|---------------|
@@ -86,7 +86,7 @@ Finsight is a comprehensive, modern financial dashboard application built with N
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js v20+ 
@@ -133,58 +133,9 @@ yarn start
 
 ---
 
-## 📁 Project Structure
-
-```
-finsight/
-├── app/                          # Next.js App Router
-│   ├── dashboard/               # Dashboard page
-│   ├── insights/                # Insights page
-│   ├── transactions/            # Transaction management page
-│   ├── settings/                # Settings & role management page
-│   ├── layout.tsx               # Root layout
-│   ├── page.tsx                 # Home page
-│   └── globals.css              # Global styles
-├── components/
-│   ├── dashboard/               # Dashboard components
-│   │   ├── StatCard.tsx         # Metric cards (Income, Expenses, Balance)
-│   │   ├── BalanceTrend.tsx     # Area chart with range toggle
-│   │   ├── SpendingDonut.tsx    # Donut chart
-│   │   ├── RecentActivity.tsx   # Activity feed
-│   │   └── MonthlyComparisonChart.tsx # Monthly comparison chart
-│   ├── insights/               # Insights components
-│   │   ├── FinancialPulse.tsx   # Key metrics cards
-│   │   ├── InsightsCharts.tsx   # Category breakdown, top categories, monthly comparison
-│   │   └── InsightsGrid.tsx     # Signals, action board, narrative snapshot
-│   ├── layout/                 # Layout components
-│   │   ├── AppShell.tsx        # Main app shell
-│   │   ├── Header.tsx          # Header with navigation
-│   │   └── Sidebar.tsx         # Sidebar navigation
-│   ├── transactions/           # Transaction components
-│   │   ├── TransactionTable.tsx # Transaction list table
-│   │   ├── AddTransactionModal.tsx # Add transaction form
-│   │   └── EditTransactionModal.tsx # Edit transaction form
-│   ├── providers/              # App providers
-│   │   └── ThemeProvider.tsx   # Theme configuration
-│   └── ui/                     # shadcn/ui components
-├── context/                     # React Context
-│   ├── RoleContext.tsx         # Role management
-│   └── TransactionContext.tsx  # Transaction data management
-├── hooks/
-│   └── useTransactions.ts      # Transaction filtering and sorting logic
-├── lib/
-│   ├── utils.ts               # Utility functions
-│   ├── categories.ts          # Category color mapping
-│   └── mock-data.ts           # Mock data generator
-├── types/
-│   └── index.ts               # TypeScript type definitions
-└── public/                     # Static assets
-
-```
-
 ---
 
-## 🎯 Usage Scenarios
+## Usage Scenarios
 
 ### For Users (Viewer Role)
 - View financial dashboards and insights
@@ -198,33 +149,10 @@ finsight/
 - User and data management capabilities
 - Generate reports and export data
 
----
-
-## 🔄 Data Flow
-
-1. **TransactionContext** - Central hub for transaction data management
-   - Handles CRUD operations
-   - Persists data to LocalStorage
-   - Provides global transaction state
-
-2. **useTransactions Hook** - Encapsulates filtering logic
-   - Type filtering (Income/Expense)
-   - Category filtering
-   - Date range filtering
-   - Search functionality
-   - Sorting options
-
-3. **RoleContext** - Manages user roles and permissions
-   - Admin vs. Viewer mode
-   - Feature access control
-
-4. **Component Hierarchy** - Charts and cards consume filtered data
-   - Real-time updates on filter changes
-   - Smooth animations with Framer Motion
 
 ---
 
-## 🎨 Color Palette
+## Color Palette
 
 - **Primary Green** - Income, positive metrics (#10b981)
 - **Primary Red** - Expenses, negative metrics (#ef4444)
@@ -234,7 +162,7 @@ finsight/
 
 ---
 
-## 📊 Chart Features
+## Chart Features
 
 - **Interactive Tooltips** - Dark-themed custom tooltips with smooth animations
 - **Hover States** - Visual feedback on chart interactions
@@ -244,7 +172,7 @@ finsight/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Feel free to:
 1. Fork the repository
@@ -255,38 +183,9 @@ Contributions are welcome! Feel free to:
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
-
-## 💬 Support & Feedback
-
-For questions, issues, or feature requests, please open an issue on GitHub or reach out to the maintainers.
-
----
-
-**Built with ❤️ using Next.js, React, and Tailwind CSS**
-   pnpm dev
-   ```
-
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to explore FinSight.
-
-## Approach & Design Decisions
-
-### State Management
-State was managed using standard **React Context** combined with custom hooks to keep components clean. 
-- `TransactionContext` holds the source of truth for all transactions and handles Local Storage persistent synchronization.
-- `RoleContext` stores the active mock user role, cleanly propagating `isAdmin` access checks down to the UI.
-
-
-### Data Flow
-We abstracted data manipulation (sorting, filtering, pagination) into the `useTransactions` hook. This ensures that the UI layers (like the Transactions table and Insights cards) remain declarative and simply display the processed subsets of data.
-
-### UI / UX
-We adopted a clean, minimalist design utilizing `shadcn/ui` and raw Tailwind CSS. Responsive design was implemented gracefully with CSS Grid and Flexbox, wrapping complex dashboard elements accurately on mobile breakpoints. Empty states and toast notifications (`sonner`) were added to inform users of actions (like adding or exporting data).
-
-## License
-MIT
 
