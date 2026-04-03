@@ -226,37 +226,6 @@ export function InsightsGrid() {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden border-border/70">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_55%)]" />
-        <CardHeader className="relative pb-1">
-          <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-base">Financial Pulse</CardTitle>
-            <Badge variant="outline" className="text-xs">Live from your transaction history</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="relative grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Transactions Analyzed</p>
-            <p className="text-2xl font-bold tracking-tight mt-1">{data.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Across all recorded periods</p>
-          </div>
-
-          <div>
-            <p className="text-xs text-muted-foreground">Latest Month Spend</p>
-            <p className="text-2xl font-bold tracking-tight mt-1">{formatCurrency(currentMonthExpenses)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Reference month: {monthlyLabel}</p>
-          </div>
-
-          <div>
-            <p className="text-xs text-muted-foreground">Net Position</p>
-            <p className="text-2xl font-bold tracking-tight mt-1">{formatCurrency(netPosition)}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {netPosition >= 0 ? 'Positive overall balance' : 'Negative overall balance'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <Card className="lg:col-span-3 border-border/70">
           <CardHeader className="pb-2">

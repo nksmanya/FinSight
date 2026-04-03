@@ -1,4 +1,6 @@
 import { InsightsGrid } from '@/components/insights/InsightsGrid';
+import { InsightsCharts } from '@/components/insights/InsightsCharts';
+import { FinancialPulse } from '@/components/insights/FinancialPulse';
 
 export default function InsightsPage() {
   return (
@@ -10,6 +12,8 @@ export default function InsightsPage() {
         </p>
       </div>
 
+      <FinancialPulse />
+      <InsightsCharts />
       <InsightsGrid />
     </div>
   );
