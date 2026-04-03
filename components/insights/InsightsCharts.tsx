@@ -175,7 +175,7 @@ export function InsightsCharts() {
           <CardDescription>All spending categories ranked by total amount.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-80 w-full">
+          <div className="h-80 w-full" style={{ minHeight: '320px', minWidth: '100%' }}>
             {categoryBreakdown.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 No expense data available yet.
