@@ -31,20 +31,6 @@ export const mockTransactions: Transaction[] = [
   // June 2026
   { id: '18', date: '2026-06-02', description: 'Gift Money', category: 'Income', amount: 2000.00, type: 'income' },
   { id: '19', date: '2026-06-18', description: 'Dress', category: 'Shopping', amount: 1000.00, type: 'expense' },
-  
-  // April 2024 (Historical Data)
-  { id: '20', date: '2024-04-01', description: 'Tech Corp Salary', category: 'Income', amount: 5200.00, type: 'income' },
-  { id: '21', date: '2024-04-02', description: 'Whole Foods', category: 'Groceries', amount: 145.20, type: 'expense' },
-  { id: '22', date: '2024-04-03', description: 'Uber Rides', category: 'Transport', amount: 24.50, type: 'expense' },
-  { id: '23', date: '2024-04-05', description: 'Monthly Rent', category: 'Housing', amount: 1800.00, type: 'expense' },
-  { id: '24', date: '2024-04-08', description: 'Netflix Subscription', category: 'Entertainment', amount: 15.99, type: 'expense' },
-  { id: '25', date: '2024-04-10', description: 'Client Freelance Work', category: 'Income', amount: 850.00, type: 'income' },
-  { id: '26', date: '2024-04-12', description: 'Shell Station', category: 'Transport', amount: 45.00, type: 'expense' },
-  { id: '27', date: '2024-04-15', description: 'Gym Membership', category: 'Health', amount: 60.00, type: 'expense' },
-  { id: '28', date: '2024-04-18', description: 'Amazon Purchases', category: 'Shopping', amount: 112.30, type: 'expense' },
-  { id: '29', date: '2024-04-20', description: 'Starbucks', category: 'Dining', amount: 8.50, type: 'expense' },
-  { id: '30', date: '2024-04-22', description: 'Dinner with Friends', category: 'Dining', amount: 75.00, type: 'expense' },
-  { id: '31', date: '2024-04-25', description: 'Dividend Payment', category: 'Income', amount: 120.50, type: 'income' },
 ];
 
 export const chartData = [
