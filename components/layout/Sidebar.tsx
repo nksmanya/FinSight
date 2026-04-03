@@ -46,15 +46,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t">
-        <div className="bg-muted p-4 rounded-xl text-center">
-          <p className="text-sm font-medium mb-1">Need help?</p>
-          <p className="text-xs text-muted-foreground mb-3">Check our docs</p>
-          <button className="text-xs font-medium bg-background border px-3 py-1.5 rounded-full shadow-sm hover:bg-card">
-            Documentation
-          </button>
-        </div>
-      </div>
     </aside>
   );
 }

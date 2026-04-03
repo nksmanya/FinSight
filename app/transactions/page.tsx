@@ -6,8 +6,9 @@ import { AddTransactionModal } from '@/components/transactions/AddTransactionMod
 import { useRole } from '@/context/RoleContext';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import { formatCurrency } from '@/lib/mock-data';
+import { Button } from '@/components/ui/button';
 
 export default function TransactionsPage() {
   const { isAdmin } = useRole();
@@ -28,6 +29,7 @@ export default function TransactionsPage() {
     addTransaction,
     deleteTransaction,
     editTransaction,
+    exportCSV,
     categories,
     stats,
     allFilteredTransactionsLength,
@@ -51,7 +53,13 @@ export default function TransactionsPage() {
             Manage and track all your income and expenses.
           </p>
         </div>
-        {isAdmin && <AddTransactionModal onAdd={addTransaction} existingCategories={categories.filter(c => c !== 'all')} />}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="gap-2" onClick={exportCSV}>
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Export CSV</span>
+          </Button>
+          {isAdmin && <AddTransactionModal onAdd={addTransaction} existingCategories={categories.filter(c => c !== 'all')} />}
+        </div>
       </div>
 
       <div className="space-y-4">

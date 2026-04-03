@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Transaction } from '@/types';
 import { useGlobalTransactions } from '@/context/TransactionContext';
+import { toast } from 'sonner';
 
 export type SortField = 'date' | 'amount';
 export type SortOrder = 'asc' | 'desc';
@@ -71,6 +72,32 @@ export function useTransactions() {
     return filteredAndSortedData.slice(0, limit);
   }, [filteredAndSortedData, limit]);
 
+  const exportCSV = () => {
+    if (filteredAndSortedData.length === 0) {
+      toast.error('No transactions to export.');
+      return;
+    }
+
+    const headers = ['ID', 'Date', 'Description', 'Category', 'Type', 'Amount'];
+    const csvLines = [
+      headers.join(','),
+      ...filteredAndSortedData.map(t => 
+        // Wrapping description in quotes to safety escape internal commas
+        `${t.id},${t.date},"${t.description.replace(/"/g, '""')}",${t.category},${t.type},${t.amount}`
+      )
+    ];
+
+    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `finsight_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`Exported ${filteredAndSortedData.length} records successfully.`);
+  };
+
   return {
     transactions: paginatedData,
     allFilteredTransactionsLength: stats.count,
@@ -91,5 +118,6 @@ export function useTransactions() {
     addTransaction,
     deleteTransaction,
     editTransaction,
+    exportCSV,
   };
 }

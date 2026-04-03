@@ -1,27 +1,15 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { useGlobalTransactions } from '@/context/TransactionContext';
+import { useState } from 'react';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#14b8a6', '#06b6d4', '#ec4899'];
 
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-background border rounded-lg p-3 shadow-md z-50">
-        <p className="font-medium text-sm mb-1">{payload[0].payload.name}</p>
-        <p className="text-sm font-bold" style={{ color: payload[0].payload.color }}>
-          ${payload[0].value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
 export function SpendingDonut() {
   const { data } = useGlobalTransactions();
+  const [hoveredItem, setHoveredItem] = useState<{name: string, value: number} | null>(null);
   
   const liveSpendingData = (() => {
     const expenses = data.filter(t => t.type === 'expense');
@@ -44,24 +32,44 @@ export function SpendingDonut() {
         <CardDescription>Where your money went this month.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px] w-full">
+        <div className="h-[250px] w-full relative">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              {hoveredItem ? hoveredItem.name : 'TOTAL'}
+            </div>
+            <div className="text-3xl font-black text-foreground">
+              {Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                notation: 'compact',
+                maximumFractionDigits: 1,
+              }).format(hoveredItem ? hoveredItem.value : liveSpendingData.reduce((a, b) => a + b.value, 0))}
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie
-                data={liveSpendingData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {liveSpendingData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <RechartsTooltip content={<CustomTooltip />} />
-            </PieChart>
+                <Pie
+                  data={liveSpendingData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={95}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                  onMouseEnter={(_, index) => setHoveredItem(liveSpendingData[index])}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  {liveSpendingData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color} 
+                      style={{ outline: 'none', transition: 'all 0.2s ease-in-out' }} 
+                      className="hover:opacity-80 cursor-pointer"
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
           </ResponsiveContainer>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
