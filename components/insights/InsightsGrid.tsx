@@ -24,6 +24,19 @@ interface Signal {
   note: string;
 }
 
+const CATEGORY_COLORS = [
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#14b8a6',
+  '#8b5cf6',
+  '#f97316',
+  '#06b6d4',
+  '#e11d48',
+  '#22c55e',
+];
+
 function getToneClasses(tone: SignalTone) {
   if (tone === 'good') {
     return {
@@ -80,6 +93,15 @@ export function InsightsGrid() {
     }
   });
   const topCategoryPercentage = totalExpenses > 0 ? Math.round((topCategoryAmount / totalExpenses) * 100) : 0;
+
+  const rankedCategoryColors = Array.from(categoryMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([category], index) => ({
+      category,
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    }));
+
+  const topCategoryColor = rankedCategoryColors.find((item) => item.category === topCategory)?.color ?? '#3b82f6';
 
   // 2. Biggest Single Expense
   let biggestExpense = expenses.length > 0 ? expenses[0] : null;
@@ -333,7 +355,7 @@ export function InsightsGrid() {
       >
         <p className="text-sm font-medium">Narrative Snapshot</p>
         <p className="text-sm text-muted-foreground mt-1">
-          Largest category is <span className="font-semibold text-foreground">{topCategory}</span>, monthly trend is{' '}
+          Largest category is <span className="font-semibold" style={{ color: topCategoryColor }}>{topCategory}</span>, monthly trend is{' '}
           <span className="font-semibold text-foreground">{monthlyComparisonStr}</span>, and your average daily spend in {monthlyLabel} is{' '}
           <span className="font-semibold text-foreground">{daysWithExpenseEntries > 0 ? formatCurrency(dailyBurnRate) : 'N/A'}</span>.
         </p>
