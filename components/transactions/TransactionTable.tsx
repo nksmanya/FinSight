@@ -14,6 +14,7 @@ import { ArrowDown, ArrowUp, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRole } from '@/context/RoleContext';
 import { EditTransactionModal } from './EditTransactionModal';
+import { getCategoryColorClass } from '@/lib/categories';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -96,7 +97,7 @@ export function TransactionTable({
                   <div className="font-medium">{transaction.description}</div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="font-normal">
+                  <Badge variant="outline" className={cn("font-medium", getCategoryColorClass(transaction.category))}>
                     {transaction.category}
                   </Badge>
                 </TableCell>

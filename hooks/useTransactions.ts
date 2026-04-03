@@ -9,8 +9,15 @@ export function useTransactions() {
   const [data, setData] = useState<Transaction[]>(mockTransactions);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [limit, setLimit] = useState<number>(50);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  const categories = useMemo(() => {
+    const cats = new Set(data.map((t) => t.category));
+    return ['all', ...Array.from(cats)].sort();
+  }, [data]);
 
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
     const newTransaction = {
@@ -48,6 +55,11 @@ export function useTransactions() {
       result = result.filter((t) => t.type === typeFilter);
     }
 
+    // Category filter
+    if (categoryFilter !== 'all') {
+      result = result.filter((t) => t.category === categoryFilter);
+    }
+
     // Sort
     result.sort((a, b) => {
       let comparison = 0;
@@ -61,14 +73,35 @@ export function useTransactions() {
     });
 
     return result;
-  }, [data, search, typeFilter, sortField, sortOrder]);
+  }, [data, search, typeFilter, categoryFilter, sortField, sortOrder]);
+
+  const stats = useMemo(() => {
+    let income = 0;
+    let expenses = 0;
+    filteredAndSortedData.forEach((t) => {
+      if (t.type === 'income') income += t.amount;
+      else expenses += t.amount;
+    });
+    return { income, expenses, count: filteredAndSortedData.length };
+  }, [filteredAndSortedData]);
+
+  const paginatedData = useMemo(() => {
+    return filteredAndSortedData.slice(0, limit);
+  }, [filteredAndSortedData, limit]);
 
   return {
-    transactions: filteredAndSortedData,
+    transactions: paginatedData,
+    allFilteredTransactionsLength: stats.count,
+    stats,
+    categories,
     search,
     setSearch,
     typeFilter,
     setTypeFilter,
+    categoryFilter,
+    setCategoryFilter,
+    limit,
+    setLimit,
     sortField,
     setSortField,
     sortOrder,
