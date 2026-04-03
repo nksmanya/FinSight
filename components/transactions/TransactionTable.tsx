@@ -65,23 +65,24 @@ export function TransactionTable({
   return (
     <div className="border rounded-md">
       <Table>
-        <TableHeader>
-          <TableRow>
+        <TableHeader className="bg-muted/40">
+          <TableRow className="hover:bg-transparent">
             <TableHead 
-              className="cursor-pointer hover:bg-muted/50 transition-colors w-[120px]"
+              className="cursor-pointer hover:text-foreground transition-colors w-[130px] font-semibold"
               onClick={() => onSort('date')}
             >
               Date <SortIcon field="date" />
             </TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead className="font-semibold">Description</TableHead>
+            <TableHead className="font-semibold">Type</TableHead>
+            <TableHead className="font-semibold">Category</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/50 transition-colors text-right"
+              className="cursor-pointer hover:text-foreground transition-colors text-right font-semibold"
               onClick={() => onSort('amount')}
             >
               Amount <SortIcon field="amount" />
             </TableHead>
-            {isAdmin && <TableHead className="w-[100px] text-right">Actions</TableHead>}
+            {isAdmin && <TableHead className="w-[100px] text-right font-semibold">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -89,12 +90,22 @@ export function TransactionTable({
             const isIncome = transaction.type === 'income';
             
             return (
-              <TableRow key={transaction.id} className="group">
-                <TableCell className="font-medium whitespace-nowrap text-muted-foreground">
-                  {new Date(transaction.date).toLocaleDateString()}
+              <TableRow key={transaction.id} className="group hover:bg-muted/30 transition-colors border-b last:border-0 data-[state=selected]:bg-muted">
+                <TableCell className="font-medium whitespace-nowrap text-muted-foreground/80 py-4">
+                  {new Date(transaction.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </TableCell>
                 <TableCell>
                   <div className="font-medium">{transaction.description}</div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={cn(
+                    "capitalize font-medium text-xs",
+                    isIncome 
+                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400" 
+                      : "bg-rose-500/10 text-rose-600 border-rose-500/20 dark:text-rose-400"
+                  )}>
+                    {transaction.type}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={cn("font-medium", getCategoryColorClass(transaction.category))}>

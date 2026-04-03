@@ -51,7 +51,7 @@ export default function TransactionsPage() {
             Manage and track all your income and expenses.
           </p>
         </div>
-        {isAdmin && <AddTransactionModal onAdd={addTransaction} />}
+        {isAdmin && <AddTransactionModal onAdd={addTransaction} existingCategories={categories.filter(c => c !== 'all')} />}
       </div>
 
       <div className="space-y-4">

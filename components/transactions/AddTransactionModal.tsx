@@ -16,24 +16,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 interface AddTransactionModalProps {
   onAdd: (transaction: any) => void;
+  existingCategories: string[];
 }
 
-export function AddTransactionModal({ onAdd }: AddTransactionModalProps) {
+export function AddTransactionModal({ onAdd, existingCategories }: AddTransactionModalProps) {
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [type, setType] = useState<TransactionType>('expense');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!description || !amount || !category) return;
+    const finalCategory = selectedCategory === 'other' ? customCategory : selectedCategory;
+    if (!description || !amount || !finalCategory) return;
 
     onAdd({
       description,
       amount: parseFloat(amount),
-      category,
+      category: finalCategory,
       type,
       date,
     });
@@ -42,7 +45,8 @@ export function AddTransactionModal({ onAdd }: AddTransactionModalProps) {
     // Reset form
     setDescription('');
     setAmount('');
-    setCategory('');
+    setSelectedCategory('');
+    setCustomCategory('');
     setType('expense');
   };
 
@@ -113,13 +117,26 @@ export function AddTransactionModal({ onAdd }: AddTransactionModalProps) {
               </div>
               <div className="grid gap-2">
                 <label htmlFor="category" className="text-sm font-medium">Category</label>
-                <Input
-                  id="category"
-                  placeholder="e.g. Entertainment"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingCategories.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                    <SelectItem value="other">Other (Specify)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {selectedCategory === 'other' && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Type new category..."
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    required
+                  />
+                )}
               </div>
             </div>
           </div>
