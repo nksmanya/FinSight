@@ -7,14 +7,18 @@ import { Input } from '@/components/ui/input';
 import { useRole } from '@/context/RoleContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const { setTheme, theme } = useTheme();
   const { role, setRole } = useRole();
 
   return (
-    <header className="h-16 border-b bg-background flex items-center justify-between px-6 sticky top-0 z-10 transition-colors">
+    <header className="h-16 border-b bg-background flex items-center justify-between px-3 sm:px-6 sticky top-0 z-20 transition-colors gap-2">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
         <div className="relative hidden md:block w-64 focus-within:w-96 transition-all duration-300">
@@ -27,8 +31,8 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="bg-muted p-1 rounded-full flex items-center mr-2">
+      <div className="flex items-center gap-1 sm:gap-3 min-w-0">
+        <div className="bg-muted p-1 rounded-full hidden sm:flex items-center mr-1 sm:mr-2">
           <button
             onClick={() => setRole('viewer')}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
@@ -63,9 +67,9 @@ export function Header() {
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"></span>
         </Button>
 
-        <div className="h-8 w-[1px] bg-border mx-1"></div>
+        <div className="h-8 w-[1px] bg-border mx-1 hidden sm:block"></div>
 
-        <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-primary/20 transition-all">
+        <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-transparent hover:ring-primary/20 transition-all hidden sm:flex">
           <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User" />
           <AvatarFallback>JD</AvatarFallback>
         </Avatar>

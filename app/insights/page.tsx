@@ -6,7 +6,7 @@ export default function InsightsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Financial Insights</h1>
         <p className="text-muted-foreground mt-1">
-          AI-driven analysis of your spending habits and financial health.
+          Clear, data-driven observations to help you understand spending behavior and make better monthly decisions.
         </p>
       </div>
 

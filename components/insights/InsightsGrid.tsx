@@ -1,19 +1,51 @@
 'use client';
 
-import { InsightCard } from './InsightCard';
 import { 
   TrendingUp, 
   TrendingDown, 
-  PiggyBank, 
+  PiggyBank,
   CalendarDays, 
-  Wallet,
-  AlertCircle,
-  Activity,
-  Clock3,
-  BadgeDollarSign,
+  Sparkles,
+  CircleAlert,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/mock-data';
 import { useGlobalTransactions } from '@/context/TransactionContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+type SignalTone = 'good' | 'watch' | 'risk';
+
+interface Signal {
+  title: string;
+  percent: number;
+  valueLabel: string;
+  tone: SignalTone;
+  note: string;
+}
+
+function getToneClasses(tone: SignalTone) {
+  if (tone === 'good') {
+    return {
+      badge: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+      bar: 'bg-emerald-500',
+      label: 'Healthy',
+    };
+  }
+
+  if (tone === 'watch') {
+    return {
+      badge: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
+      bar: 'bg-amber-500',
+      label: 'Watch',
+    };
+  }
+
+  return {
+    badge: 'bg-rose-500/10 text-rose-600 border-rose-500/30',
+    bar: 'bg-rose-500',
+    label: 'Risk',
+  };
+}
 
 export function InsightsGrid() {
   const { data } = useGlobalTransactions();
@@ -140,85 +172,161 @@ export function InsightsGrid() {
   const dailyBurnRate = daysWithExpenseEntries > 0 ? currentMonthExpenses / daysWithExpenseEntries : 0;
 
   const monthlyLabel = latestDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  const netPosition = totalIncome - totalExpenses;
 
-  const insights = [
+  const expenseRatio = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
+  const coveragePercent = currentMonthExpenses > 0 ? Math.min(200, incomeCoverage) : 0;
+  const savingsPercentNormalized = totalIncome > 0 ? Math.min(100, Math.max(0, savingsRate)) : 0;
+
+  const signals: Signal[] = [
     {
-      title: 'Highest Spending Category',
-      value: topCategory,
-      description: expenses.length > 0 ? `Accounts for ${topCategoryPercentage}% of your total expenses.` : 'No expenses recorded yet.',
-      icon: TrendingDown,
-      colorClass: 'bg-rose-500/10 text-rose-500 [&>svg]:text-rose-500',
-    },
-    {
-      title: 'Monthly Comparison',
-      value: monthlyComparisonStr,
-      description: monthlyComparisonDesc,
-      icon: monthlyChange > 0 ? Activity : TrendingUp,
-      colorClass: monthlyChange > 0 ? 'bg-orange-500/10 text-orange-500 [&>svg]:text-orange-500' : 'bg-emerald-500/10 text-emerald-500 [&>svg]:text-emerald-500',
+      title: 'Category Concentration',
+      percent: topCategoryPercentage,
+      valueLabel: `${topCategoryPercentage}%`,
+      tone: topCategoryPercentage >= 40 ? 'risk' : topCategoryPercentage >= 25 ? 'watch' : 'good',
+      note: expenses.length > 0
+        ? `${topCategory} is your largest expense bucket.`
+        : 'Add expense entries to detect concentration.',
     },
     {
       title: 'Income Coverage',
-      value: currentMonthExpenses > 0 ? `${incomeCoverage.toFixed(0)}%` : 'N/A',
-      description: `${incomeCoverageDesc} (${monthlyLabel})`,
-      icon: BadgeDollarSign,
-      colorClass: incomeCoverage >= 100
-        ? 'bg-emerald-500/10 text-emerald-500 [&>svg]:text-emerald-500'
-        : 'bg-amber-500/10 text-amber-500 [&>svg]:text-amber-500',
+      percent: Math.min(100, coveragePercent),
+      valueLabel: currentMonthExpenses > 0 ? `${incomeCoverage.toFixed(0)}%` : 'N/A',
+      tone: currentMonthExpenses === 0 ? 'watch' : incomeCoverage >= 100 ? 'good' : 'risk',
+      note: `${incomeCoverageDesc} (${monthlyLabel})`,
     },
     {
-      title: 'Biggest Single Expense',
-      value: biggestExpense ? formatCurrency(biggestExpense.amount) : '$0.00',
-      description: biggestExpense 
-        ? `${biggestExpense.description} on ${new Date(biggestExpense.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.` 
-        : 'No expenses yet.',
-      icon: AlertCircle,
-      colorClass: 'bg-orange-500/10 text-orange-500 [&>svg]:text-orange-500',
+      title: 'Savings Strength',
+      percent: savingsPercentNormalized,
+      valueLabel: totalIncome > 0 ? `${savingsRate.toFixed(1)}%` : 'N/A',
+      tone: totalIncome === 0 ? 'watch' : savingsRate >= 20 ? 'good' : 'risk',
+      note: totalIncome > 0
+        ? 'Benchmark target is 20%+ savings rate.'
+        : 'Add income entries to measure savings strength.',
     },
     {
-      title: 'Savings Rate',
-      value: totalIncome > 0 ? `${savingsRate.toFixed(1)}%` : 'N/A',
-      description: totalIncome > 0
-        ? savingsRate > 20
-          ? 'You are saving more than the recommended 20%.'
-          : 'Consider finding areas to cut costs to reach 20%.'
-        : 'Add income entries to calculate savings rate.',
-      icon: PiggyBank,
-      colorClass: 'bg-blue-500/10 text-blue-500 [&>svg]:text-blue-500',
+      title: 'Expense Pressure',
+      percent: Math.min(100, expenseRatio),
+      valueLabel: totalIncome > 0 ? `${expenseRatio.toFixed(0)}%` : 'N/A',
+      tone: totalIncome === 0 ? 'watch' : expenseRatio > 90 ? 'risk' : expenseRatio > 70 ? 'watch' : 'good',
+      note: totalIncome > 0
+        ? 'Lower expense pressure leaves more room to save.'
+        : 'Add income entries to unlock this signal.',
     },
-    {
-      title: 'Average Daily Spend',
-      value: daysWithExpenseEntries > 0 ? formatCurrency(dailyBurnRate) : 'N/A',
-      description: daysWithExpenseEntries > 0
-        ? `Average on active spending days in ${monthlyLabel}.`
-        : `No expense activity in ${monthlyLabel}.`,
-      icon: Clock3,
-      colorClass: 'bg-cyan-500/10 text-cyan-500 [&>svg]:text-cyan-500',
-    },
-    {
-      title: 'Most Active Spending Day',
-      value: topDayName,
-      description: expenses.length > 0 ? `You make ${topDayPercentage}% of your transactions on ${topDayName}s.` : 'Insufficient data.',
-      icon: CalendarDays,
-      colorClass: 'bg-violet-500/10 text-violet-500 [&>svg]:text-violet-500',
-    },
-    {
-      title: 'Net Position',
-      value: formatCurrency(totalIncome - totalExpenses),
-      description: totalIncome >= totalExpenses
-        ? 'You are net positive across recorded transactions.'
-        : 'Expenses currently exceed income in recorded transactions.',
-      icon: Wallet,
-      colorClass: totalIncome >= totalExpenses
-        ? 'bg-emerald-500/10 text-emerald-500 [&>svg]:text-emerald-500'
-        : 'bg-rose-500/10 text-rose-500 [&>svg]:text-rose-500',
-    }
   ];
 
+  const usefulObservation =
+    topCategoryPercentage >= 45
+      ? `${topCategory} dominates spending. A small reduction here can create the biggest improvement.`
+      : monthlyChange > 10
+        ? 'Monthly spending is accelerating. Review recent variable expenses before month-end.'
+        : netPosition >= 0
+          ? 'Your overall net position is positive. Focus on consistency to keep momentum.'
+          : 'Expenses are outpacing income. Prioritize high-impact cuts in top categories.';
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {insights.map((insight) => (
-        <InsightCard key={insight.title} {...insight} />
-      ))}
+    <div className="space-y-6">
+      <Card className="relative overflow-hidden border-border/70">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_55%)]" />
+        <CardHeader className="relative pb-1">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-base">Financial Pulse</CardTitle>
+            <Badge variant="outline" className="text-xs">Live from your transaction history</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="relative grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Transactions Analyzed</p>
+            <p className="text-2xl font-bold tracking-tight mt-1">{data.length}</p>
+            <p className="text-xs text-muted-foreground mt-1">Across all recorded periods</p>
+          </div>
+
+          <div>
+            <p className="text-xs text-muted-foreground">Latest Month Spend</p>
+            <p className="text-2xl font-bold tracking-tight mt-1">{formatCurrency(currentMonthExpenses)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Reference month: {monthlyLabel}</p>
+          </div>
+
+          <div>
+            <p className="text-xs text-muted-foreground">Net Position</p>
+            <p className="text-2xl font-bold tracking-tight mt-1">{formatCurrency(netPosition)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {netPosition >= 0 ? 'Positive overall balance' : 'Negative overall balance'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Card className="lg:col-span-3 border-border/70">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Insight Radar</CardTitle>
+            <p className="text-sm text-muted-foreground">A compact view of your strongest and weakest financial signals.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {signals.map((signal) => {
+              const tone = getToneClasses(signal.tone);
+              return (
+                <div key={signal.title} className="space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium">{signal.title}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{signal.valueLabel}</span>
+                      <Badge variant="outline" className={tone.badge}>{tone.label}</Badge>
+                    </div>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${tone.bar}`}
+                      style={{ width: `${Math.min(100, Math.max(0, signal.percent))}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">{signal.note}</p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2 border-border/70">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Action Board</CardTitle>
+            <p className="text-sm text-muted-foreground">Three key insights you can act on immediately.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border p-3 bg-muted/30">
+              <p className="text-xs text-muted-foreground">Highest Spending Category</p>
+              <p className="text-base font-semibold mt-1">{topCategory}</p>
+              <p className="text-xs text-muted-foreground mt-1">Represents {topCategoryPercentage}% of total expenses.</p>
+            </div>
+
+            <div className="rounded-lg border p-3 bg-muted/30">
+              <p className="text-xs text-muted-foreground">Monthly Comparison</p>
+              <p className="text-base font-semibold mt-1">{monthlyComparisonStr}</p>
+              <p className="text-xs text-muted-foreground mt-1">{monthlyComparisonDesc}</p>
+            </div>
+
+            <div className="rounded-lg border p-3 bg-muted/30">
+              <p className="text-xs text-muted-foreground">Useful Observation</p>
+              <p className="text-sm mt-1 leading-relaxed">{usefulObservation}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="rounded-xl border bg-card px-4 py-3">
+        <p className="text-sm font-medium">Narrative Snapshot</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Largest category is <span className="font-semibold text-foreground">{topCategory}</span>, monthly trend is{' '}
+          <span className="font-semibold text-foreground">{monthlyComparisonStr}</span>, and your average daily spend in {monthlyLabel} is{' '}
+          <span className="font-semibold text-foreground">{daysWithExpenseEntries > 0 ? formatCurrency(dailyBurnRate) : 'N/A'}</span>.
+        </p>
+        {biggestExpense ? (
+          <p className="text-xs text-muted-foreground mt-2">
+            Biggest single transaction: {biggestExpense.description} ({formatCurrency(biggestExpense.amount)}).
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }
