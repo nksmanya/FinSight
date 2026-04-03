@@ -20,6 +20,12 @@ export default function TransactionsPage() {
     setTypeFilter,
     categoryFilter,
     setCategoryFilter,
+    dateFilter,
+    setDateFilter,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
     limit,
     setLimit,
     sortField,
@@ -97,6 +103,17 @@ export default function TransactionsPage() {
               </SelectContent>
             </Select>
 
+            <Select value={dateFilter} onValueChange={(v: any) => setDateFilter(v)}>
+              <SelectTrigger className="w-full sm:w-[140px] bg-background h-9">
+                <SelectValue placeholder="All Dates" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Dates</SelectItem>
+                <SelectItem value="current-month">Current Month</SelectItem>
+                <SelectItem value="custom">Custom Range</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={limit.toString()} onValueChange={(v) => setLimit(parseInt(v))}>
               <SelectTrigger className="w-full sm:w-[110px] bg-background h-9">
                 <SelectValue placeholder="Limit" />
@@ -109,6 +126,26 @@ export default function TransactionsPage() {
               </SelectContent>
             </Select>
           </div>
+
+          {dateFilter === 'custom' && (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-background h-9 text-sm w-full sm:w-auto"
+                placeholder="Start Date"
+              />
+              <span className="text-muted-foreground text-sm hidden sm:inline">to</span>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-background h-9 text-sm w-full sm:w-auto"
+                placeholder="End Date"
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">

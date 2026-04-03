@@ -5,12 +5,16 @@ import { toast } from 'sonner';
 
 export type SortField = 'date' | 'amount';
 export type SortOrder = 'asc' | 'desc';
+export type DateFilter = 'all' | 'current-month' | 'custom';
 
 export function useTransactions() {
   const { data, addTransaction, deleteTransaction, editTransaction } = useGlobalTransactions();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [limit, setLimit] = useState<number>(50);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -43,6 +47,25 @@ export function useTransactions() {
       result = result.filter((t) => t.category === categoryFilter);
     }
 
+    // Date filter
+    if (dateFilter === 'current-month') {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      result = result.filter((t) => {
+        const tDate = new Date(t.date);
+        return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
+      });
+    } else if (dateFilter === 'custom' && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Include entire end date
+      result = result.filter((t) => {
+        const tDate = new Date(t.date);
+        return tDate >= start && tDate <= end;
+      });
+    }
+
     // Sort
     result.sort((a, b) => {
       let comparison = 0;
@@ -56,7 +79,7 @@ export function useTransactions() {
     });
 
     return result;
-  }, [data, search, typeFilter, categoryFilter, sortField, sortOrder]);
+  }, [data, search, typeFilter, categoryFilter, dateFilter, startDate, endDate, sortField, sortOrder]);
 
   const stats = useMemo(() => {
     let income = 0;
@@ -109,6 +132,12 @@ export function useTransactions() {
     setTypeFilter,
     categoryFilter,
     setCategoryFilter,
+    dateFilter,
+    setDateFilter,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
     limit,
     setLimit,
     sortField,

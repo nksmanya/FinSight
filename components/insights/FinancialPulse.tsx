@@ -2,6 +2,7 @@
 
 import { useGlobalTransactions } from '@/context/TransactionContext';
 import { formatCurrency } from '@/lib/mock-data';
+import { getCategoryColorClass } from '@/lib/categories';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Activity, BarChart3, Wallet } from 'lucide-react';
@@ -55,24 +56,18 @@ export function FinancialPulse() {
       value: highestCategory,
       helper: highestCategoryAmount > 0 ? formatCurrency(highestCategoryAmount) : 'No expense data yet',
       icon: Activity,
-      accent: 'bg-muted text-muted-foreground',
-      line: 'bg-sky-500/80',
     },
     {
       label: 'Latest Month Spend',
       value: formatCurrency(currentMonthExpenses),
       helper: `Reference month: ${monthlyLabel}`,
       icon: BarChart3,
-      accent: 'bg-muted text-muted-foreground',
-      line: 'bg-amber-500/80',
     },
     {
       label: 'Net Position',
       value: formatCurrency(netPosition),
       helper: netPosition >= 0 ? 'Positive overall balance' : 'Negative overall balance',
       icon: Wallet,
-      accent: 'bg-muted text-muted-foreground',
-      line: netPosition >= 0 ? 'bg-emerald-500/80' : 'bg-rose-500/80',
     },
   ];
 
@@ -93,26 +88,30 @@ export function FinancialPulse() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 * index + 0.1, duration: 0.28 }}
-              className="min-h-[140px]"
+              className="space-y-3"
             >
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium text-muted-foreground">{item.label}</p>
-                <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${item.accent}`}>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
                   <item.icon className="h-4 w-4" />
                 </span>
               </div>
 
-              <p className="text-2xl md:text-3xl font-bold tracking-tight mt-2 truncate" title={item.value}>{item.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{item.helper}</p>
-
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ delay: 0.12 * index + 0.2, duration: 0.45 }}
-                  className={`h-full ${item.line}`}
-                />
+              <div className="text-2xl md:text-3xl font-bold tracking-tight truncate" title={item.value}>
+                {index === 0 ? (
+                  <span style={{ color: '#3b82f6' }}>{item.value}</span>
+                ) : index === 1 ? (
+                  <span style={{ color: '#ef4444' }}>{item.value}</span>
+                ) : index === 2 && netPosition >= 0 ? (
+                  <span style={{ color: '#10b981' }}>{item.value}</span>
+                ) : index === 2 && netPosition < 0 ? (
+                  <span style={{ color: '#ef4444' }}>{item.value}</span>
+                ) : (
+                  <p>{item.value}</p>
+                )}
               </div>
+
+              <p className="text-xs text-muted-foreground">{item.helper}</p>
             </motion.div>
           </CardContent>
         </Card>
