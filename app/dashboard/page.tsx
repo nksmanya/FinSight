@@ -4,6 +4,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { BalanceTrend } from '@/components/dashboard/BalanceTrend';
 import { SpendingDonut } from '@/components/dashboard/SpendingDonut';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { MonthlyComparisonChart } from '@/components/dashboard/MonthlyComparisonChart';
 import { WalletIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import { useGlobalTransactions } from '@/context/TransactionContext';
@@ -63,6 +64,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <BalanceTrend />
         <SpendingDonut />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <MonthlyComparisonChart />
       </div>
 
       <div className="grid grid-cols-1 gap-6">

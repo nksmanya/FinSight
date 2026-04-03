@@ -89,7 +89,11 @@ export function InsightsCharts() {
 
     const categoryBreakdownData = Array.from(categoryMap.entries())
       .map(([category, amount]) => ({ category, amount }))
-      .sort((a, b) => b.amount - a.amount);
+      .sort((a, b) => b.amount - a.amount)
+      .map((item, index) => ({
+        ...item,
+        color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+      }));
 
     const topCategoriesData = categoryBreakdownData.slice(0, 5).map((item, index) => ({
       ...item,
@@ -184,12 +188,6 @@ export function InsightsCharts() {
                   margin={{ top: 8, right: 24, left: 24, bottom: 8 }}
                   barCategoryGap="24%"
                 >
-                  <defs>
-                    <linearGradient id="breakdownBarGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.95} />
-                      <stop offset="100%" stopColor="#60a5fa" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
                   <XAxis
                     type="number"
                     tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
@@ -215,13 +213,16 @@ export function InsightsCharts() {
                     dataKey="amount"
                     name="Spend"
                     radius={[0, 10, 10, 0]}
-                    fill="url(#breakdownBarGradient)"
                     isAnimationActive
                     animationBegin={100}
                     animationDuration={750}
                     animationEasing="ease-out"
-                    activeBar={{ fill: '#60a5fa' }}
-                  />
+                    activeBar={{ stroke: '#ffffff', strokeOpacity: 0.25, strokeWidth: 1 }}
+                  >
+                    {categoryBreakdown.map((entry) => (
+                      <Cell key={`bar-${entry.category}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}

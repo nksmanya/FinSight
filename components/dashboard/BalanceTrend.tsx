@@ -1,111 +1,204 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useGlobalTransactions } from '@/context/TransactionContext';
-import { useTheme } from 'next-themes';
+
+type RangeKey = '3M' | '6M' | '1Y';
+
+const RANGE_MONTHS: Record<RangeKey, number> = {
+  '3M': 3,
+  '6M': 6,
+  '1Y': 12,
+};
+
+function formatAxisValue(value: number) {
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}k`;
+  }
+  return `$${value}`;
+}
 
 export function BalanceTrend() {
-  const { theme } = useTheme();
   const { data } = useGlobalTransactions();
-  
-  const liveChartData = (() => {
-    const sorted = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    // Start with a base balance to make the chart look realistic
-    let runningBalance = 12400; 
-    
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthlyMap = new Map<string, number>();
-    
-    // Pre-fill all months with base balance
-    months.forEach((m) => monthlyMap.set(m, runningBalance));
+  const [range, setRange] = useState<RangeKey>('6M');
 
-    sorted.forEach((txn) => {
-      const monthStr = new Date(txn.date).toLocaleString('en-US', { month: 'short' });
-      // Only process if it matches our short month format
-      const monthIdx = months.indexOf(monthStr);
-      if (monthIdx !== -1) {
-        if (txn.type === 'income') runningBalance += txn.amount;
-        else runningBalance -= txn.amount;
-        
-        // Carry the balance forward to all subsequent months
-        for (let i = monthIdx; i < months.length; i++) {
-          monthlyMap.set(months[i], runningBalance);
-        }
-      }
+  const monthlySeries = useMemo(() => {
+    const latestDate = data.reduce((max, txn) => {
+      const d = new Date(txn.date);
+      return d > max ? d : max;
+    }, new Date());
+
+    const baseMonth = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+
+    const monthEntries = Array.from({ length: 12 }, (_, idx) => {
+      const d = new Date(baseMonth.getFullYear(), baseMonth.getMonth() - (11 - idx), 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      return {
+        key,
+        month: d.toLocaleDateString('en-US', { month: 'short' }),
+        monthLabel: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        income: 0,
+        expense: 0,
+      };
     });
 
-    return Array.from(monthlyMap.entries()).map(([month, balance]) => ({
-      month,
-      balance
-    }));
-  })();
+    const monthMap = new Map(monthEntries.map((m) => [m.key, m]));
 
-  // Choose accent color based on theme
-  const strokeColor = '#3b82f6'; // Bright blue for pop
-  const fillColor = '#3b82f6';
+    data.forEach((txn) => {
+      const d = new Date(txn.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const target = monthMap.get(key);
+      if (!target) return;
+
+      if (txn.type === 'income') target.income += txn.amount;
+      else target.expense += txn.amount;
+    });
+
+    return monthEntries;
+  }, [data]);
+
+  const displayData = useMemo(() => {
+    return monthlySeries.slice(-RANGE_MONTHS[range]);
+  }, [monthlySeries, range]);
+
+  const rangeIncome = displayData.reduce((sum, item) => sum + item.income, 0);
+  const rangeExpense = displayData.reduce((sum, item) => sum + item.expense, 0);
 
   return (
-    <Card className="col-span-1 lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Balance Trend</CardTitle>
-        <CardDescription>Your account balance over the last 12 months.</CardDescription>
+    <Card className="col-span-1 lg:col-span-2 border-border/70 shadow-sm bg-gradient-to-b from-card to-card/90">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <CardTitle>Balance Trend</CardTitle>
+            <CardDescription>Monthly income vs expenses</CardDescription>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 p-1">
+            {(Object.keys(RANGE_MONTHS) as RangeKey[]).map((option) => {
+              const isActive = range === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setRange(option)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    isActive
+                      ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </CardHeader>
+
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[320px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={liveChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart
+              key={`range-${range}`}
+              data={displayData}
+              margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+            >
               <defs>
-                <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={fillColor} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={fillColor} stopOpacity={0} />
+                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.18} />
+                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis 
-                dataKey="month" 
-                stroke="#888888" 
-                fontSize={12} 
-                tickLine={false} 
-                axisLine={false} 
-              />
-              <YAxis
-                stroke="#888888"
+
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(148,163,184,0.16)" />
+
+              <XAxis
+                dataKey="month"
+                stroke="#6b7280"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
               />
+              <YAxis
+                stroke="#6b7280"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => formatAxisValue(Number(value))}
+              />
+
               <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="rounded-xl border border-primary/10 bg-background/95 backdrop-blur-md p-4 shadow-xl">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
-                            {payload[0].payload.month}
-                          </span>
-                          <span className="font-bold text-2xl text-foreground">
+                cursor={false}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || payload.length === 0) return null;
+                  return (
+                    <div className="rounded-xl border border-border/60 bg-card/95 backdrop-blur-md px-3 py-2 shadow-xl">
+                      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center justify-between gap-6">
+                          <span className="font-medium text-emerald-400">Income</span>
+                          <span className="font-semibold text-foreground">
                             ${Number(payload[0]?.value || 0).toLocaleString()}
                           </span>
                         </div>
+                        <div className="flex items-center justify-between gap-6">
+                          <span className="font-medium text-rose-400">Expense</span>
+                          <span className="font-semibold text-foreground">
+                            ${Number(payload[1]?.value || 0).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
-                    );
-                  }
-                  return null;
+                    </div>
+                  );
                 }}
               />
+
               <Area
                 type="monotone"
-                dataKey="balance"
-                stroke={strokeColor}
-                strokeWidth={4}
+                dataKey="income"
+                stroke="#00e0a4"
+                strokeWidth={3}
+                fill="url(#incomeGradient)"
                 fillOpacity={1}
-                fill="url(#colorBalance)"
-                style={{ filter: 'drop-shadow(0 4px 8px rgba(59, 130, 246, 0.2))' }}
+                isAnimationActive
+                animationBegin={80}
+                animationDuration={600}
+                animationEasing="ease-out"
+                activeDot={{ r: 4, fill: '#00e0a4' }}
+              />
+
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#ff4f75"
+                strokeWidth={3}
+                fill="url(#expenseGradient)"
+                fillOpacity={1}
+                isAnimationActive
+                animationBegin={180}
+                animationDuration={650}
+                animationEasing="ease-out"
+                activeDot={{ r: 4, fill: '#ff4f75' }}
               />
             </AreaChart>
           </ResponsiveContainer>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-lg border bg-background/70 px-3 py-2">
+            <p className="text-xs text-muted-foreground">Income ({range})</p>
+            <p className="text-sm font-semibold text-emerald-400">${rangeIncome.toLocaleString()}</p>
+          </div>
+          <div className="rounded-lg border bg-background/70 px-3 py-2">
+            <p className="text-xs text-muted-foreground">Expense ({range})</p>
+            <p className="text-sm font-semibold text-rose-400">${rangeExpense.toLocaleString()}</p>
+          </div>
         </div>
       </CardContent>
     </Card>
